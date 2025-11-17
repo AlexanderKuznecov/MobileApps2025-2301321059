@@ -8,20 +8,20 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.healthyhabits.model.Habit
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthyhabits.ui.HomeViewModel
-
 
 @Composable
 fun HomeScreen(
     onAddHabitClick: () -> Unit,
     viewModel: HomeViewModel
 ) {
-    val habits = viewModel.habits
+    val habits by viewModel.habits.collectAsState()
 
     androidx.compose.material3.Scaffold(
         floatingActionButton = {
@@ -53,7 +53,6 @@ fun HomeScreen(
         }
     }
 }
-
 
 @Composable
 fun HabitItem(habit: Habit) {

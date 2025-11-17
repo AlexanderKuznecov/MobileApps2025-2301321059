@@ -1,33 +1,50 @@
 package com.example.healthyhabits.ui
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.example.healthyhabits.model.Habit
+import com.example.healthyhabits.repository.HabitRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(
+    private val repository: HabitRepository
+) : ViewModel() {
 
-    // Списък с навици – засега примерни (по-късно ще ги зареждаме от база)
-    var habits by mutableStateOf(
-        listOf(
-            Habit(id = 1, name = "Пиене на вода", description = "8 чаши на ден"),
-            Habit(id = 2, name = "Разходка", description = "30 минути навън"),
-            Habit(id = 3, name = "Четене", description = "15 минути книга")
-        )
-    )
-        private set
+    // 🔹 това вече идва директно от Room чрез Flow → StateFlow
+    val habits: StateFlow<List<Habit>> =
+        repository.getAllHabits()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
 
-    // Ще ни трябва по-нататък, когато AddHabitScreen започне да записва
+    // 🔹 вече НЕ е suspend – викаме го от UI директно
     fun addHabit(name: String, description: String?) {
-        val newId = (habits.maxOfOrNull { it.id } ?: 0L) + 1L
+        viewModelScope.launch {
+            val newHabit = Habit(
+                name = name,
+                description = description
+            )
+            repository.insertHabit(newHabit)
+        }
+    }
 
-        val newHabit = Habit(
-            id = newId,
-            name = name,
-            description = description
-        )
+    // --- FACTORY ---
+    class Factory(
+        private val repository: HabitRepository
+    ) : ViewModelProvider.Factory {
 
-        habits = habits + newHabit
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return HomeViewModel(repository) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }
