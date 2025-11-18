@@ -119,8 +119,11 @@ HealthyHabits+ използва **MVVM + Repository + Hilt + Room**.
 
 ### 5 Screenshots
 
-/screenshots/home.jpg  
-/screenshots/add.jpg  
+### Начален екран
+![Home Screen](screenshots/home.jpg)
+
+### Добавяне на навик
+![Add Habit](screenshots/add.jpg) 
 
 ### 6 APK file 
 
