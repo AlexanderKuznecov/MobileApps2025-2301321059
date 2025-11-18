@@ -2,17 +2,27 @@ package com.example.healthyhabits
 
 import android.app.DatePickerDialog
 import android.content.Intent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -23,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -30,18 +41,6 @@ import com.example.healthyhabits.model.Habit
 import com.example.healthyhabits.ui.HomeViewModel
 import com.example.healthyhabits.utils.calculateCompletionPercentage
 import java.util.Calendar
-
-import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.RoundedCornerShape
-
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Share
-
 
 @Composable
 fun HomeScreen(
@@ -52,10 +51,12 @@ fun HomeScreen(
     val context = LocalContext.current
     val completionPercent = calculateCompletionPercentage(habits)
 
-    // тук пазим кой навик редактираме в момента
+    // кой навик редактираме
     var habitToEdit by remember { mutableStateOf<Habit?>(null) }
+    // кой навик искаме да изтрием
+    var habitToDelete by remember { mutableStateOf<Habit?>(null) }
 
-    androidx.compose.material3.Scaffold(
+    Scaffold(
         floatingActionButton = {
             Button(onClick = onAddHabitClick) {
                 Text(text = "Добави навик")
@@ -92,7 +93,7 @@ fun HomeScreen(
                             viewModel.toggleHabitCompleted(selected)
                         },
                         onDelete = { selected ->
-                            viewModel.deleteHabit(selected)
+                            habitToDelete = selected
                         },
                         onShare = { selected ->
                             val shareText = buildString {
@@ -101,16 +102,25 @@ fun HomeScreen(
                                     append("Описание: ${selected.description}\n")
                                 }
                                 append("Статус: ")
-                                append(if (selected.isCompleted) "завършен ✅" else "в процес ⏳")
+                                append(
+                                    if (selected.isCompleted)
+                                        "завършен ✅"
+                                    else
+                                        "в процес ⏳"
+                                )
                             }
 
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_SUBJECT, "Моят навик от HealthyHabits+")
+                                putExtra(
+                                    Intent.EXTRA_SUBJECT,
+                                    "Моят навик от HealthyHabits+"
+                                )
                                 putExtra(Intent.EXTRA_TEXT, shareText)
                             }
 
-                            val chooser = Intent.createChooser(intent, "Сподели навика чрез...")
+                            val chooser =
+                                Intent.createChooser(intent, "Сподели навика чрез...")
                             context.startActivity(chooser)
                         },
                         onEdit = { selected ->
@@ -120,7 +130,7 @@ fun HomeScreen(
                 }
             }
 
-            // Диалог за редакция, ако има избран навик
+            // Диалог за редакция
             habitToEdit?.let { habit ->
                 EditHabitDialog(
                     habit = habit,
@@ -128,6 +138,42 @@ fun HomeScreen(
                     onSave = { newName, newDescription ->
                         viewModel.updateHabitDetails(habit, newName, newDescription)
                         habitToEdit = null
+                    }
+                )
+            }
+
+            // Диалог за изтриване
+            habitToDelete?.let { habit ->
+                AlertDialog(
+                    onDismissRequest = { habitToDelete = null },
+                    title = {
+                        Text(text = "Изтриване на навик")
+                    },
+                    text = {
+                        Text(
+                            "Сигурни ли сте, че искате да изтриете „${habit.name}“?",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.deleteHabit(habit)
+                                habitToDelete = null
+                            },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Да, изтрий")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { habitToDelete = null }
+                        ) {
+                            Text("Отказ")
+                        }
                     }
                 )
             }
@@ -170,15 +216,26 @@ fun HabitItem(
         else -> MaterialTheme.colorScheme.outline
     }
 
+    // Лека анимация – ако е изпълнен, картата се „смалява“ леко
+    val scale by animateFloatAsState(
+        targetValue = if (habit.isCompleted) 0.97f else 1f,
+        label = "cardScale"
+    )
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer(
+                scaleX = scale,
+                scaleY = scale
+            ),
         colors = CardDefaults.cardColors(
             containerColor = if (habit.isCompleted)
                 MaterialTheme.colorScheme.primaryContainer
             else
                 MaterialTheme.colorScheme.surfaceVariant
         ),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(if (habit.isCompleted) 2.dp else 6.dp)
     ) {
         Row(
             modifier = Modifier
@@ -214,10 +271,10 @@ fun HabitItem(
                             Box(
                                 modifier = Modifier
                                     .background(
-                                        color = dayColor.copy(alpha = 0.2f),
-                                        shape = RoundedCornerShape(8.dp)
+                                        color = dayColor.copy(alpha = 0.18f),
+                                        shape = RoundedCornerShape(10.dp)
                                     )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
                             ) {
                                 Text(
                                     text = day,
@@ -233,9 +290,9 @@ fun HabitItem(
                                 modifier = Modifier
                                     .background(
                                         color = MaterialTheme.colorScheme.secondaryContainer,
-                                        shape = RoundedCornerShape(8.dp)
+                                        shape = RoundedCornerShape(10.dp)
                                     )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
                             ) {
                                 Text(
                                     text = date,
@@ -261,21 +318,24 @@ fun HabitItem(
             Column(horizontalAlignment = Alignment.End) {
 
                 IconButton(onClick = { onShare(habit) }) {
-                    Icon(Icons.Default.Share, contentDescription = "Share")
+                    Icon(Icons.Filled.Share, contentDescription = "Сподели")
                 }
 
                 IconButton(onClick = { onEdit(habit) }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit")
+                    Icon(Icons.Filled.Edit, contentDescription = "Редактирай")
                 }
 
                 IconButton(onClick = { onDelete(habit) }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete")
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Изтрий",
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }
     }
 }
-
 
 @Composable
 fun EditHabitDialog(
@@ -305,7 +365,7 @@ fun EditHabitDialog(
     val context = LocalContext.current
     val calendar = remember { Calendar.getInstance() }
 
-    // когато отворим DatePicker – при избор изчисляваме и деня
+    // DatePicker – при избор изчисляваме и деня
     val datePickerDialog = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->

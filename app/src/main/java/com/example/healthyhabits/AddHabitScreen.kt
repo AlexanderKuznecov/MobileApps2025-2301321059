@@ -71,11 +71,6 @@ fun AddHabitScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Избери дата от календара – денят ще се попълни автоматично.",
-            style = MaterialTheme.typography.bodyMedium
-        )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(
@@ -151,7 +146,6 @@ fun AddHabitScreen(
         // Запази
         Button(
             onClick = {
-                // ако искаш да НАЛОЖИМ задължителна дата, остави && selectedDate != null
                 if (name.isNotBlank() && selectedDate != null && selectedDay != null) {
                     val finalDescription = buildString {
                         append("Дата: $selectedDate\n")
@@ -162,7 +156,6 @@ fun AddHabitScreen(
                     }
                     onSaveHabit(name, finalDescription)
                 }
-                // ако името или датата липсват – нищо не правим (по желание може Toast)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
