@@ -16,7 +16,6 @@ class HomeViewModel @Inject constructor(
     private val repository: HabitRepository
 ) : ViewModel() {
 
-    // 🔹 вече се стартира веднага (Eagerly), не чака колектор
     val habits: StateFlow<List<Habit>> =
         repository.getAllHabits()
             .stateIn(

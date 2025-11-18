@@ -14,7 +14,6 @@ class HabitUiTest {
 
     @Test
     fun addHabitScreen_showsSaveButton() {
-        // Стартираме само AddHabitScreen в тестова Activity
         composeTestRule.setContent {
             AddHabitScreen(
                 onBackClick = {},

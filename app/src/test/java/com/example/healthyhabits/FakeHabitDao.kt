@@ -8,10 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeHabitDao : HabitDao {
 
-    // Държим текущия списък с навици в StateFlow
     private val habitsFlow = MutableStateFlow<List<Habit>>(emptyList())
 
-    // --- Имплементация на DAO интерфейса ---
+    //Имплементация на DAO интерфейса
 
     override fun getAllHabits(): Flow<List<Habit>> = habitsFlow
 

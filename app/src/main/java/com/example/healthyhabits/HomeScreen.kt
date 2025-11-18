@@ -405,7 +405,6 @@ fun HabitItem(
         else -> MaterialTheme.colorScheme.outline
     }
 
-    // Лека анимация – ако е изпълнен, картата се „смалява“ леко
     val scale by animateFloatAsState(
         targetValue = if (habit.isCompleted) 0.97f else 1f,
         label = "cardScale"
@@ -554,7 +553,6 @@ fun EditHabitDialog(
     val context = LocalContext.current
     val calendar = remember { Calendar.getInstance() }
 
-    // DatePicker – при избор изчисляваме и деня
     val datePickerDialog = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
