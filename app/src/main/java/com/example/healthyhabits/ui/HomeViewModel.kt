@@ -5,27 +5,26 @@ import androidx.lifecycle.viewModelScope
 import com.example.healthyhabits.model.Habit
 import com.example.healthyhabits.repository.HabitRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: HabitRepository
 ) : ViewModel() {
 
-    // Данните идват директно от Room (Flow -> StateFlow)
+    // 🔹 вече се стартира веднага (Eagerly), не чака колектор
     val habits: StateFlow<List<Habit>> =
         repository.getAllHabits()
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
+                started = SharingStarted.Eagerly,
                 initialValue = emptyList()
             )
 
-    // Добавяне на навик
     fun addHabit(name: String, description: String?) {
         viewModelScope.launch {
             val newHabit = Habit(
