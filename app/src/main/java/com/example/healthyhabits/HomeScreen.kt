@@ -17,6 +17,10 @@ import com.example.healthyhabits.model.Habit
 import com.example.healthyhabits.ui.HomeViewModel
 import androidx.compose.material3.Checkbox
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.material3.TextButton
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+
 
 
 @Composable
@@ -54,10 +58,12 @@ fun HomeScreen(
                         habit = habit,
                         onToggleCompleted = { selected ->
                             viewModel.toggleHabitCompleted(selected)
+                        },
+                        onDelete = { selected ->
+                            viewModel.deleteHabit(selected)
                         }
                     )
                 }
-
             }
         }
     }
@@ -66,7 +72,8 @@ fun HomeScreen(
 @Composable
 fun HabitItem(
     habit: Habit,
-    onToggleCompleted: (Habit) -> Unit
+    onToggleCompleted: (Habit) -> Unit,
+    onDelete: (Habit) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -86,7 +93,9 @@ fun HabitItem(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = habit.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -104,7 +113,14 @@ fun HabitItem(
                     )
                 }
             }
+
+            TextButton(
+                onClick = { onDelete(habit) }
+            ) {
+                Text("Изтрий")
+            }
         }
     }
 }
+
 
