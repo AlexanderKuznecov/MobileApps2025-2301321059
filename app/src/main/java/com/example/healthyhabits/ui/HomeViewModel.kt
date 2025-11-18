@@ -43,6 +43,18 @@ class HomeViewModel(
         }
     }
 
+    fun updateHabitDetails(habit: Habit, newName: String, newDescription: String) {
+        viewModelScope.launch {
+            repository.updateHabit(
+                habit.copy(
+                    name = newName,
+                    description = newDescription
+                )
+            )
+        }
+    }
+
+
     fun deleteHabit(habit: Habit) {
         viewModelScope.launch {
             repository.deleteHabit(habit)
