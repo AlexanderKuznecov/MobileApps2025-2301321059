@@ -117,7 +117,7 @@ HealthyHabits+ използва **MVVM + Repository + Hilt + Room**.
 - приложение генерира текст  
 - отваря стандартен Android share sheet
 
-### 5 Screenshots
+## 5. Screenshots
 
 ### Начален екран
 ![Home Screen](screenshots/home.jpg)
@@ -125,7 +125,7 @@ HealthyHabits+ използва **MVVM + Repository + Hilt + Room**.
 ### Добавяне на навик
 ![Add Habit](screenshots/add.jpg) 
 
-### 6 APK file 
+## 6. APK file 
 
 APK е качен в:
 /apk/app-release.apk
